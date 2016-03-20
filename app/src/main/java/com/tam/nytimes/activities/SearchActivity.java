@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -33,6 +34,7 @@ import cz.msebera.android.httpclient.Header;
 public class SearchActivity extends AppCompatActivity {
 
     private static final String TAG = "SearchActivity";
+    private static final int REQUEST_CODE = 10;
 
     @Bind(R.id.etSearch)
     EditText etSearch;
@@ -45,7 +47,7 @@ public class SearchActivity extends AppCompatActivity {
 
     private ArrayList<Article> articles;
     private ArticleAdapter adapter;
-    private FilterOptions filterOptions;
+    static FilterOptions filterOptions;
     private void setupViews() {
         filterOptions = new FilterOptions();
         articles = new ArrayList<>();
@@ -72,6 +74,13 @@ public class SearchActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
     }
 
+//    @Override
+//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE) {
+//            this.filterOptions = (FilterOptions) data.getSerializableExtra("filterOptions");
+//        }
+//    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -90,8 +99,9 @@ public class SearchActivity extends AppCompatActivity {
         if (id == R.id.action_settings) {
             //Toast.makeText(SearchActivity.this, "setting", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(this, SettingsActivity.class);
-            intent.putExtra("filterOptions", filterOptions);
+            //intent.putExtra("filterOptions", filterOptions);
             startActivity(intent);
+            //startActivityForResult(intent, REQUEST_CODE);
             return true;
         }
 
@@ -99,31 +109,50 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     public void onArticleSearch(View view) {
+//        Toast.makeText(SearchActivity.this, "search", Toast.LENGTH_SHORT).show();
         String query = etSearch.getText().toString();
         if (query.isEmpty()) {
             Toast.makeText(SearchActivity.this, "Please input some text to search", Toast.LENGTH_SHORT).show();
             etSearch.requestFocus();
         } else {
             ArticleClient client = new ArticleClient();
-            client.getArticles(query, 0, new JsonHttpResponseHandler() {
+            client.getArticles(query, 0, filterOptions, new JsonHttpResponseHandler() {
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                     JSONArray articlesJsonArray = null;
                     try {
                         adapter.clear();
                         articlesJsonArray = response.getJSONObject("response").getJSONArray("docs");
+//                        if (articlesJsonArray.length() == 0) {
+//                            Toast.makeText(SearchActivity.this, "There is no record", Toast.LENGTH_SHORT).show();
+//                        } else {
 //                        articles.addAll(Article.fromJSONArray(articlesJsonArray));
-                        adapter.addAll(Article.fromJSONArray(articlesJsonArray));
+                            adapter.addAll(Article.fromJSONArray(articlesJsonArray));
+                        //}
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
                 }
-
+                //                @Override
+//                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+//                    JSONArray articlesJsonArray = null;
+//                    try {
+//                        adapter.clear();
+//                        articlesJsonArray = response.getJSONObject("response").getJSONArray("docs");
+////                        articles.addAll(Article.fromJSONArray(articlesJsonArray));
+//                        adapter.addAll(Article.fromJSONArray(articlesJsonArray));
+//                    } catch (JSONException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//
                 @Override
                 public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
                     super.onFailure(statusCode, headers, throwable, errorResponse);
                 }
             });
+
+            Log.d(TAG, filterOptions.getSortOrder().toString());
         }
     }
 }
