@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,6 +16,7 @@ import android.widget.Toast;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.tam.nytimes.R;
 import com.tam.nytimes.adapters.ArticleAdapter;
+import com.tam.nytimes.helpers.EndlessScrollListener;
 import com.tam.nytimes.models.Article;
 import com.tam.nytimes.models.FilterOptions;
 import com.tam.nytimes.network.ArticleClient;
@@ -62,6 +62,41 @@ public class SearchActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        gvResults.setOnScrollListener(new EndlessScrollListener() {
+
+            @Override
+            public boolean onLoadMore(int page, int totalItemsCount) {
+                fetchArticles(page);
+                return true;
+            }
+        });
+    }
+
+    private void fetchArticles(int page) {
+
+        String query = etSearch.getText().toString();
+        ArticleClient client = new ArticleClient();
+        client.getArticles(query, page, filterOptions, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                JSONArray articlesJsonArray = null;
+                try {
+                    //adapter.clear();
+                    articlesJsonArray = response.getJSONObject("response").getJSONArray("docs");
+//                  articles.addAll(Article.fromJSONArray(articlesJsonArray));
+                    adapter.addAll(Article.fromJSONArray(articlesJsonArray));
+                    //}
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                super.onFailure(statusCode, headers, throwable, errorResponse);
+            }
+        });
     }
 
     @Override
@@ -97,11 +132,11 @@ public class SearchActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            //Toast.makeText(SearchActivity.this, "setting", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(this, SettingsActivity.class);
             //intent.putExtra("filterOptions", filterOptions);
             startActivity(intent);
             //startActivityForResult(intent, REQUEST_CODE);
+
             return true;
         }
 
@@ -109,50 +144,13 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     public void onArticleSearch(View view) {
-//        Toast.makeText(SearchActivity.this, "search", Toast.LENGTH_SHORT).show();
         String query = etSearch.getText().toString();
         if (query.isEmpty()) {
             Toast.makeText(SearchActivity.this, "Please input some text to search", Toast.LENGTH_SHORT).show();
             etSearch.requestFocus();
         } else {
-            ArticleClient client = new ArticleClient();
-            client.getArticles(query, 0, filterOptions, new JsonHttpResponseHandler() {
-                @Override
-                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                    JSONArray articlesJsonArray = null;
-                    try {
-                        adapter.clear();
-                        articlesJsonArray = response.getJSONObject("response").getJSONArray("docs");
-//                        if (articlesJsonArray.length() == 0) {
-//                            Toast.makeText(SearchActivity.this, "There is no record", Toast.LENGTH_SHORT).show();
-//                        } else {
-//                        articles.addAll(Article.fromJSONArray(articlesJsonArray));
-                            adapter.addAll(Article.fromJSONArray(articlesJsonArray));
-                        //}
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-                //                @Override
-//                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-//                    JSONArray articlesJsonArray = null;
-//                    try {
-//                        adapter.clear();
-//                        articlesJsonArray = response.getJSONObject("response").getJSONArray("docs");
-////                        articles.addAll(Article.fromJSONArray(articlesJsonArray));
-//                        adapter.addAll(Article.fromJSONArray(articlesJsonArray));
-//                    } catch (JSONException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//
-                @Override
-                public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                    super.onFailure(statusCode, headers, throwable, errorResponse);
-                }
-            });
-
-            Log.d(TAG, filterOptions.getSortOrder().toString());
+            adapter.clear();
+            fetchArticles(0);
         }
     }
 }
