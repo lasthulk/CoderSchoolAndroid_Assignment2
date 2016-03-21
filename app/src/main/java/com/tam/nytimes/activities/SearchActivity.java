@@ -17,6 +17,7 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 import com.tam.nytimes.R;
 import com.tam.nytimes.adapters.ArticleAdapter;
 import com.tam.nytimes.helpers.EndlessScrollListener;
+import com.tam.nytimes.helpers.NetworkHelper;
 import com.tam.nytimes.models.Article;
 import com.tam.nytimes.models.FilterOptions;
 import com.tam.nytimes.network.ArticleClient;
@@ -24,6 +25,7 @@ import com.tam.nytimes.network.ArticleClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.parceler.Parcels;
 
 import java.util.ArrayList;
 
@@ -58,7 +60,8 @@ public class SearchActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Article selectedArticle = articles.get(position);
                 Intent intent = new Intent(getApplicationContext(), ArticleActivity.class);
-                intent.putExtra("article", selectedArticle);
+//                intent.putExtra("article", selectedArticle);
+                intent.putExtra("article", Parcels.wrap(selectedArticle));
                 startActivity(intent);
             }
         });
@@ -74,7 +77,10 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private void fetchArticles(int page) {
-
+        if (!NetworkHelper.isOnline()) {
+            Toast.makeText(this, "Network is not available", Toast.LENGTH_LONG).show();
+            return;
+        }
         String query = etSearch.getText().toString();
         ArticleClient client = new ArticleClient();
         client.getArticles(query, page, filterOptions, new JsonHttpResponseHandler() {

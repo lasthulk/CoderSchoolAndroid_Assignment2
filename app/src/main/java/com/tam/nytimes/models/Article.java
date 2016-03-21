@@ -3,14 +3,15 @@ package com.tam.nytimes.models;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.parceler.Parcel;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  * Created by toan on 3/20/2016.
  */
-public class Article implements Serializable {
+@Parcel
+public class Article {
     String webUrl;
     String headLine;
     String thumbNail;
@@ -26,6 +27,8 @@ public class Article implements Serializable {
     public String getThumbNail() {
         return thumbNail;
     }
+
+    public Article() {}
 
     public  Article(JSONObject jsonObject) {
         try {
