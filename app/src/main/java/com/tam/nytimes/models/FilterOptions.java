@@ -1,6 +1,7 @@
 package com.tam.nytimes.models;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 /**
@@ -13,35 +14,40 @@ public class FilterOptions implements Serializable {
     private boolean cbFashionStyle;
     private boolean cbSports;
 
-    public String getArticleTypeFilter() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("new_desk:(");
-        if (this.isCbArts()) {
-            builder.append("\"Arts\"");
-        }
-        if(this.isCbFashionStyle()) {
-            builder.append("\"Fashion & Style\"");
-        }
-        if (this.isCbSports()) {
-            builder.append("\"Sports\"");
-        }
-        builder.append(")");
-        return  builder.toString();
-    }
-
-    public String getBeginDateFilter() {
-        Calendar calendar = this.beginDate;
-        int month = calendar.get(Calendar.MONTH) + 1;
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
-        int year = calendar.get(Calendar.YEAR);
-        String beginDate = String.valueOf(year) + String.valueOf(month < 10 ? "0" + month : month)
-                            + String.valueOf(day < 10 ? "0" + day : day);
-        return  beginDate;
-    }
-
     public FilterOptions() {
         this.beginDate = Calendar.getInstance();
         this.order = SortOrder.Oldest;
+    }
+
+    public String getArticleTypeFilter() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("news_desk:(");
+        if (this.isCbArts()) {
+            builder.append("\"Arts\" ");
+        }
+        if(this.isCbFashionStyle()) {
+            builder.append("\"Fashion & Style\" ");
+        }
+        if (this.isCbSports()) {
+            builder.append("\"Sports\" ");
+        }
+        builder.append(")");
+        String result = builder.toString();
+        if (!result.equals("news_desk:()")) {
+            return result;
+        }
+        return "";
+    }
+
+    public String getBeginDateFilter() {
+//        Calendar calendar = this.beginDate;
+//        int month = calendar.get(Calendar.MONTH) + 1;
+//        int day = calendar.get(Calendar.DAY_OF_MONTH);
+//        int year = calendar.get(Calendar.YEAR);
+//        String beginDate = String.valueOf(year) + String.valueOf(month < 10 ? "0" + month : month)
+//                            + String.valueOf(day < 10 ? "0" + day : day);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+        return  dateFormat.format(this.beginDate.getTime());
     }
 
     public boolean isCbArts() {

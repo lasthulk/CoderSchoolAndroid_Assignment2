@@ -41,7 +41,7 @@ public class ArticleClient {
             String beginDate = filterOptions.getBeginDateFilter();
             params.put("q", query);
             String filter = filterOptions.getArticleTypeFilter();
-            if (!filter.equals("new_desk:()")) {
+            if (!filter.isEmpty()) {
                 params.put("fq", filter);
             }
 
