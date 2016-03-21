@@ -9,7 +9,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.squareup.picasso.Picasso;
+import com.bumptech.glide.Glide;
 import com.tam.nytimes.R;
 import com.tam.nytimes.models.Article;
 
@@ -57,9 +57,13 @@ public class ArticleAdapter extends ArrayAdapter<Article> {
             holder.tvTitle.setText(article.getHeadLine());
             String thumnbnail = article.getThumbNail();
             if (!TextUtils.isEmpty(thumnbnail)) {
-                Picasso.with(getContext()).load(article.getThumbNail())
-                        //.resize(width, width)
-                        .fit()
+//                Picasso.with(getContext()).load(article.getThumbNail())
+//                        //.resize(width, width)
+//                        .fit()
+//                        .centerCrop()
+//                        .into(holder.ivImage);
+                Glide.with(getContext()).load(article.getThumbNail())
+                        .fitCenter()
                         .centerCrop()
                         .into(holder.ivImage);
             }
